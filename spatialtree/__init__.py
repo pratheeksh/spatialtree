@@ -13,10 +13,13 @@ Also supports spill trees.
 See: docs for spatialtree.spatialtree
 '''
 
+from __future__ import absolute_import
 import numpy
 import scipy.stats
 import random
 import heapq
+from six.moves import range
+from six.moves import zip
 
 class spatialtree(object):
 
@@ -61,9 +64,9 @@ class spatialtree(object):
         # Default values
         if 'indices' not in kwargs:
             if isinstance(data, dict):
-                kwargs['indices']   = data.keys()
+                kwargs['indices']   = list(data.keys())
             else:
-                kwargs['indices']   = range(len(data))
+                kwargs['indices']   = list(range(len(data)))
             pass
         
         n = len(kwargs['indices'])
@@ -161,13 +164,13 @@ class spatialtree(object):
             pass
 
         # Compute the bias points
-        self.__thresholds = scipy.stats.mstats.mquantiles(wx.values(), [0.5 - self.__spill/2, 0.5 + self.__spill/2])
+        self.__thresholds = scipy.stats.mstats.mquantiles(list(wx.values()), [0.5 - self.__spill/2, 0.5 + self.__spill/2])
 
         # Partition the data
         left_set    = set()
         right_set   = set()
 
-        for (i, val) in wx.iteritems():
+        for (i, val) in wx.items():
             if val >= self.__thresholds[0]:
                 right_set.add(i)
             if val < self.__thresholds[-1]:
@@ -200,14 +203,14 @@ class spatialtree(object):
         if not self.__keyvalue:
             raise TypeError('update method only supported when using key-value stores')
 
-        self.__indices.update(D.keys())
+        self.__indices.update(list(D.keys()))
 
         if self.isLeaf():
             return
 
         left_set    = {}
         right_set   = {}
-        for (key, vector) in D.iteritems():
+        for (key, vector) in D.items():
             wx = numpy.dot(self.__w, vector)
 
             if wx >= self.__thresholds[0]:
@@ -575,7 +578,7 @@ class spatialtree(object):
         W   = numpy.random.randn( k, self.__d )
 
         # normalize each sample to get a sample from unit sphere
-        for i in xrange(k):
+        for i in range(k):
             W[i] /= numpy.sqrt(numpy.sum(W[i]**2))
             pass
 
